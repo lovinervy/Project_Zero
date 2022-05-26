@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<form method="post">
+    <div class="form-group">
+        <label for="title">Тип перевода</label>
+        <p><select name="tr_to">
+            <option selected value="Subs">Субтитры</option>
+            <option value="Voice">Озвучка</option>
+        </select></p>
+
+        <label for="title">Перевести на:</label>
+        <p><select name="lang">
+            {% for lang in languages %}
+                <option value="{{ lang }}">{{ lang }}</option>
+            {% endfor %}
+        </select></p>
+    </div>
+    <div><button href="url_for('video')" type="submit" class="btn btn-primary">Отправить</button></div>
+</form>
+{% endblock %}

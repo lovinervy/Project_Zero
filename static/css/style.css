@@ -1,0 +1,19 @@
+h1 {
+    color: slategrey;
+    text-align: center;
+    padding: 10px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h5 {
+    color: rgb(65, 82, 98);
+    text-align: center;
+    padding: 10px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-image: url('/static/pattern\ seamless47.jpg');
+    background-attachment: fixed;
+    background-repeat: repeat-x, repeat-y;
+}

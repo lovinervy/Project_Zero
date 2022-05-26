@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Welcome to Video Translator {% endblock %}</h1>
+    {% if error %}
+        <p class=error><strong>Error:</strong> {{ error }}
+    {% endif %}
+    <form method="post">
+        <div class="form-group">
+            <label for="title">Ссылка на видео:</label>
+            <input type="search" maxlength="64" name="url" 
+                value="{{ request.form['url'] }}"
+                placeholder="{{ request.form['url'] or 'url'}}" class="form-control"></input>
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary">Отправить</button>
+        </div>
+    </form> 
+{% endblock %}
