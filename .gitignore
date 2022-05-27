@@ -6,6 +6,20 @@ __pycache__/
 # C extensions
 *.so
 
+#Custom Folders
+Test/
+audio/
+DATABASE/
+video/
+subtitles/
+output/
+.*/
+
+# Custom Files
+latest_silero_models.yml
+debug.txt
+
+
 # Distribution / packaging
 .Python
 build/
