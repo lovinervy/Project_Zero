@@ -1,4 +1,4 @@
-from Translator import audio, subs, voice
+from Translator import audio, subs, voice_v2
 from deep_translator import GoogleTranslator
 from time import time
 from pytube import YouTube
@@ -94,25 +94,21 @@ def modify_voice(language: str, subs: dict, song: str):
     s = song[len(file):-4]
     TEMP_FILEPATH = f'.{s}{t}'
 
-    for k, v in LANGUAGES_CODE.items():
-        if v == language:
-            voice_engine = voice.VoiceEngine(lang=k, temppath=TEMP_FILEPATH)
-            break
-    
-    for k, v in subs.items():
-        subs[k]['path'] = voice_engine.say(v['text'], f'{k}')
-    voice_engine.do()
+    if language == 'русский':
+        subs = voice_v2.say_in_russia(subs, TEMP_FILEPATH)
+    elif language == 'english':
+        subs = voice_v2.say_in_english(subs, TEMP_FILEPATH)
+    else:
+        raise BaseException(f"Not language: {language}")
     new_song = song[:-4] + language + '.mp4'
     audio.mix_translate_audio_with_original(subs, song, new_song)
-    voice_engine.clean()
-    os.removedirs(TEMP_FILEPATH)
+    voice_v2.clean(subs, TEMP_FILEPATH)
     return new_song
 
 
 def get_subs(url: str, need_langs: list):
     """
-    if not preffered subs, get preffered second subs
-    if not seconds subs get any not autogen subtitles
+    if not preffered subs, get any not autogen subtitles
     else get any subs 
     """
     S = subs.Subs(url)

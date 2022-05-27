@@ -124,9 +124,9 @@ class Subs:
             if caption[i]['start'] - end < 120 and \
                 segments[str(counter)]['text'][-1] not in ('.', '-', '!', '?'):
                 text = caption[i]['text']
-                end = caption[i]['end']
                 segments[str(counter)]['text'] += f' {text}'
-                segments[str(counter)]['end'] = end
+                segments[str(counter)]['dur'] += caption[i]['dur'] 
+                segments[str(counter)]['end'] = caption[i]['end']
             else:
                 counter += 1
                 segments[str(counter)] = caption.get(i)
@@ -151,7 +151,7 @@ def dict_to_srt(caption: dict):
     segments = []
     for i in caption.keys():
         start = caption[i]['start']
-        stop = caption[i]['start'] + caption[i]['dur']
+        stop = caption[i]['end']
 
         start = int_to_srt_time_format(start)
         stop = int_to_srt_time_format(stop)

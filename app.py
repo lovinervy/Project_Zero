@@ -63,7 +63,6 @@ def configure():
                 control.add_voiceover(url, language, voiceover)
                 has_audio = control.have_translate_voice(url, language)
             audio = has_audio[2]
-            video = f'//{app.root_path}/{video};//{app.root_path}/{audio}'
             video = translator.merge_video_audio(video, audio)
         elif translate_to == 'Subs':
             has_subs = control.have_translate_subs(url, language)
