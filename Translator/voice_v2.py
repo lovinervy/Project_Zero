@@ -5,19 +5,22 @@ import torch
 
 def text_splitter(text) -> list:
     max_len = len(text)
-    if max_len <= 140:
+    if max_len < 140:
         return [text]
     text = text.split(' ')
 
     result = []
-    tmp = ''
-    while text:
-        tmp += f' {text.pop(0)}'
-        if len(tmp) > 140:
+    cur = 0
+    count = 0
+    for i in range(len(text)):
+        count += len(text[i])
+        if count + i > 140:
+            tmp = ' '.join(text[cur:i])
+            cur = i
             result.append(tmp)
-            tmp = ''
-    if len(tmp) > 0:
-        result.append(tmp)
+            count = 0
+    tmp = ' '.join(text[cur:])
+    result.append(tmp)
     return result
 
 
@@ -46,6 +49,28 @@ def say_in_russia(subs: dict, output: str = 'output')-> dict:
     return subs
 
 
+def retell_quickly_in_russia(filepath: str, text: str) -> None:
+    text = f'<speak><p><prosody rate="fast">{text}</prosody></p></speak>'
+
+    language = 'ru'
+    model_id = 'ru_v3'
+    sample_rate = 24000
+    speaker = 'xenia'
+    device = torch.device('cpu')
+
+    model, _ = torch.hub.load(repo_or_dir='snakers4/silero-models',
+                                        model='silero_tts',
+                                        language=language,
+                                        speaker=model_id)
+    model.to(device)  # gpu or cpu
+
+    model.save_wav(ssml_text=text,
+        speaker=speaker,
+        sample_rate=sample_rate,
+        audio_path = filepath
+        )
+    
+
 def say_in_english(subs: dict, output: str = 'output') -> dict:
     if not os.path.isdir(output):
         os.makedirs(output)
@@ -66,7 +91,7 @@ def say_in_english(subs: dict, output: str = 'output') -> dict:
             files = []
             for i in range(len(text)):
                 filename = f'{output}/{k}_{i}.wav'
-                model.save_wav(texts=text,
+                model.save_wav(texts=text[i],
                     sample_rate=sample_rate,
                     )
                 os.rename('test_000.wav', filename)
@@ -96,7 +121,6 @@ def say_in_english(subs: dict, output: str = 'output') -> dict:
         subs[k]['path'] = f'{output}/{k}.wav'
     return subs
     
-
 
 def clean(subs: dict, output: str = 'output'):
     for k in subs.keys():

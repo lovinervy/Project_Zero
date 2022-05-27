@@ -101,7 +101,7 @@ def modify_voice(language: str, subs: dict, song: str):
     else:
         raise BaseException(f"Not language: {language}")
     new_song = song[:-4] + language + '.mp4'
-    audio.mix_translate_audio_with_original(subs, song, new_song)
+    audio.mix_translate_audio_with_original(language, subs, song, new_song)
     voice_v2.clean(subs, TEMP_FILEPATH)
     return new_song
 
