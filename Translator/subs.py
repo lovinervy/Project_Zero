@@ -1,27 +1,34 @@
+from calendar import c
 import datetime
-
 import time
 import re
 from html import unescape
-from pytube import YouTube
+from typing import List
 import xml.etree.ElementTree as ElementTree
+
+
+from pytube import YouTube, Caption
+
+
+from Subtitle_typing import Subtitle_block
+
 
 class Subs:
     def __init__(self, url: str) -> None:
-
-        self.yt: classmethod = YouTube(url)
+        self.yt: YouTube = YouTube(url)
         try:
             self.yt.streams
         except:
             self.yt.streams
         self.subs: str = ''
 
-    def _get_subs(self, lang: str = 'ru') -> dict:
-        caption: dict = self.yt.captions[lang]
+    def _get_subs(self, lang: str = 'ru') -> str:
+        """Get XML format caption"""
+        caption: Caption = self.yt.captions[lang]
         return caption.xml_captions
 
     def get_support_languages(self) -> list:
-        lang: dict[classmethod] = self.yt.captions
+        lang: dict[Caption] = self.yt.captions
         return lang
 
     def set_lang(self, lang: str) -> None:
@@ -54,10 +61,10 @@ class Subs:
             end_time_ms = start_time_ms + duration
             sequence_number = i + 1
             sub_line = '{seq}\n{start} --> {end}\n{text}\n'.format(
-                seq = sequence_number,
-                start = self._ms_to_srt_time(start_time_ms),
-                end = self._ms_to_srt_time(end_time_ms),
-                text = caption
+                seq     = sequence_number,
+                start   = self._ms_to_srt_time(start_time_ms),
+                end     = self._ms_to_srt_time(end_time_ms),
+                text    = caption
             )
             segments.append(sub_line)
         return '\n'.join(segments).strip()
@@ -70,12 +77,10 @@ class Subs:
             dur = 0
         return dur
 
-    def xml_to_dict(self) -> dict:
-        tree = ElementTree.fromstring(self.subs)
+    def xml_to_list(self) -> List[Subtitle_block]:
+        tree: ElementTree.Element = ElementTree.fromstring(self.subs)
         root = tree.find('body')
-
-        segments = {}
-        count = 0
+        subtitle: List[Subtitle_block] = []
         for line in list(root):
             text = line.text or ''
             duration = self.get_duration(line)
@@ -88,16 +93,13 @@ class Subs:
 
             caption = unescape(re.sub(r'\s+', ' ' ,text.replace('\n', ' ')))
             if re.sub(r'\s+', '', caption) and caption != '[Music]':
-                segments[str(count)] = {
-                    'start': start_time_ms,
-                    'dur': duration,
-                    'end': start_time_ms + duration,
-                    'text': caption
-                }
-                count += 1
-            elif int(count) > 0 and segments.get(int(count)-1, {'dur' : 0})['dur'] > duration:
-                    segments[int(count)-1]['dur'] += duration
-        return segments
+                block = Subtitle_block(
+                    start=start_time_ms,
+                    end=start_time_ms+duration,
+                    text=caption
+                )
+                subtitle.append(block)
+        return subtitle
 
     @staticmethod
     def dublicate(text: str) -> str:
@@ -112,28 +114,24 @@ class Subs:
         text = ' '.join(new_text)
         return text
 
-    def get_subs_with_filter(self) -> dict:
-        caption = self.xml_to_dict()
+    def format_subtitle(self) -> List[Subtitle_block]:
+        subtitle: List[Subtitle_block] = self.xml_to_dict()
         counter = 0
-        segments = {}
-        tmp = caption.pop(str(counter))
-        segments[str(counter)] = tmp
-
-        for i in caption.keys():
-            end = segments[str(counter)]['end']
-            if caption[i]['start'] - end < 120 and \
-                segments[str(counter)]['text'][-1] not in ('.', '-', '!', '?'):
-                text = caption[i]['text']
-                segments[str(counter)]['text'] += f' {text}'
-                segments[str(counter)]['dur'] += caption[i]['dur'] 
-                segments[str(counter)]['end'] = caption[i]['end']
+        segments: List[Subtitle_block] = []
+        tmp = subtitle.pop(counter)
+        segments[counter] = tmp
+        for i in range(len(subtitle)):
+            end = subtitle[i].end
+            if subtitle[i].start - end < 120 and \
+                    segments[counter].text[-1] not in ('.', '-', '!', '?'):
+                segments[counter].text += ' ' + subtitle[i].text
+                segments[counter].end = subtitle[i].end
             else:
                 counter += 1
-                segments[str(counter)] = caption.get(i)
+                segments.append(subtitle[i])
         return segments
 
-
-def dict_to_srt(caption: dict):
+def list_to_srt(subtitle: List[Subtitle_block]):
     def int_to_srt_time_format(d: int) -> str:
         """Convert decimal durations into proper srt format.
 
@@ -148,32 +146,27 @@ def dict_to_srt(caption: dict):
         # ms = f"{fraction:.3f}".replace("0.", "")
         return time_fmt + str(fraction)
 
-    segments = []
-    for i in caption.keys():
-        start = caption[i]['start']
-        stop = caption[i]['end']
-
-        start = int_to_srt_time_format(start)
-        stop = int_to_srt_time_format(stop)
-        
-        text = caption[i]['text']
+    segments: List[str] = []
+    for i, block in enumerate(subtitle):
+        start = int_to_srt_time_format(block.start)
+        stop = int_to_srt_time_format(block.end)
+        text = block.text
         srt = f'{int(i)+1}\n{start} --> {stop}\n{text}\n'
         segments.append(srt)
     return '\n'.join(segments).strip()
 
 
-def srt_to_dict(srt: str) -> dict:
-    def time_sec(time: str) -> float:
+def srt_to_list(srt: str) -> dict:
+    def time_ms(time: str) -> int:
         time = time.replace(',', '.').split(':')
         time = datetime.timedelta(
             hours=float(time[0]),
             minutes=float(time[1]),
             seconds=float(time[2])
             )
-        return time.total_seconds()
+        return int((time.total_seconds() * 1000) // 1)
 
-
-    data = {}
+    subtitle: List[Subtitle_block] = []
 
     caption = srt.split('\n')
 
@@ -182,14 +175,14 @@ def srt_to_dict(srt: str) -> dict:
     while i < len(caption):
         if str(counter) == caption[i]:
             times = caption[i + 1].split(' --> ')
-            data[counter] = {}
-            data[counter] = {
-                'start': time_sec(times[0]),
-                'dur': time_sec(times[1]) - time_sec(times[0]),
-                'end': time_sec(times[1]),
-                'text': caption[i + 2]
-            }
+            subtitle.append(
+                Subtitle_block(
+                    start   = time_ms(times[0]),
+                    end     = time_ms(times[1]),
+                    text    = caption[i + 2]
+                )
+            ) 
             i += 2
             counter += 1
         i += 1
-    return data
+    return subtitle

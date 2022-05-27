@@ -141,7 +141,7 @@ def get_subs(url: str, need_langs: list):
     return (access_language, sub)
 
 
-def save_subs(caption: dict) -> str:
+def save_subs(subtitle: dict) -> str:
     t = int(time() // 1)
     caption = subs.dict_to_srt(caption)
     filepath = f'{SUBS_PATH}/{t}.srt'

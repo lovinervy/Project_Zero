@@ -1,0 +1,7 @@
+Flask
+pytube
+deep_translator
+torch
+numpy
+pydub
+omegaconf
