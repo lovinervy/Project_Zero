@@ -55,7 +55,7 @@ def say_in_russian(subtitle: List[SubtitleBlock], output: str = 'output') -> Lis
         expected_length = block.end - block.start
         try:
             model.save_wav(text=text,
-                           speaker='xenia',
+                           speaker='baya',
                            sample_rate=24000,
                            audio_path=path
                            )
@@ -84,7 +84,7 @@ def retell_quickly_in_russian(filepath: str, text: str) -> None:
     model.to(device)  # gpu or cpu
 
     model.save_wav(ssml_text=text,
-                   speaker='xenia',
+                   speaker='baya',
                    sample_rate=24000,
                    audio_path=filepath
                    )
