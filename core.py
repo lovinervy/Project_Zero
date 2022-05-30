@@ -2,35 +2,36 @@ from database import DB
 from Translator import translator
 from pytube import YouTube
 
-def get_subs_from_youtube(url, language) -> str:
-    '''
-    returns the path to the saved file
-    Saved file has srt format
-    '''
-    lngs = translator.PRIORITY_TRANSLATE[language]
-    source, subs = translator.get_subs(url, lngs)
+
+def get_subs_from_youtube(url: str, language: str) -> str:
+    """
+    returns the path to the subtitle in local disk
+    """
+    languages = translator.PRIORITY_TRANSLATE[language]
+    source, subtitle = translator.get_subs(url, languages)
     if source != language:
-        subs = translator.translate(subs, source, language)
-    f = translator.save_subs(subs)
-    return f
+        subtitle = translator.translate(subtitle, source, language)
+    path_to_subtitle = translator.save_subs(subtitle)
+    return path_to_subtitle
 
 
-class Control_DB(DB):
+class ControlDatabase(DB):
     def __init__(self) -> None:
         DB.__init__(self)
-    
+
     def valid_url(self, url: str) -> bool:
         try:
+            url = url.split('&')[0]
             YouTube(url)
             return True
         except:
             return False
 
     def check_url(self, url: str) -> int:
-        '''
+        """
         if url is in database then returns youtube_id
-        else adds to database and returns youtube_id
-        '''
+        else added to database and returns youtube_id
+        """
         youtube_id = self.get_youtube_id(url)
         if youtube_id:
             return youtube_id
@@ -65,7 +66,6 @@ class Control_DB(DB):
         youtube_id = self.check_url(url)
         return self.insert_translates(youtube_id, language)
 
-
     def add_subtitles(self, url: str, language: str, name: str):
         subs = self.have_translate_subs(url, language)
         if subs:
@@ -94,16 +94,14 @@ class Control_DB(DB):
         translated_id = self.add_translate(url, language)
         self.insert_voiceovers(translated_id, name)
 
-
     def add_video(self, url: str, name: str):
         youtube_id = self.check_url(url)
         self.insert_video(youtube_id, name)
-    
 
     def _add_youtube(self, url):
-        '''
+        """
         adds url to database
-        '''
+        """
         youtube_id = self.insert_youtube(url)
         return youtube_id
     

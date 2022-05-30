@@ -1,36 +1,43 @@
-from pydub import AudioSegment, effects
-from Translator.voice_v2 import retell_quickly_in_russia
+from typing import List
 
-def _speedup(audiopath: str, text: str):
+from pydub import AudioSegment, effects
+
+from Translator.voice_v2 import retell_quickly_in_russian
+from Translator.custom_typing import AudioMessage
+
+
+def _speedup(path: str, text: str) -> AudioSegment:
     """
-    Для ускорение аудиодорожки если не успевает в заданный лимит
+    Для ускорение аудиодорожки если не успевает в заданный лимит\n
     
-    audiopath   - путь до исходной аудиодорожки
-    text        - слова которые произносятся в этой дорожке  
+    path: str   - путь до исходной аудиодорожки\n
+    text: str   - слова которые произносятся в этой дорожке
     """
-    retell_quickly_in_russia(audiopath, text)
-    voice = AudioSegment.from_file(audiopath)
+    retell_quickly_in_russian(path, text)
+    voice = AudioSegment.from_file(path)
     return voice
 
 
-def mix_translate_audio_with_original(language: str, sub: dict, song_path: str, output: str = 'output.mp4a'):
+def mix_translate_audio_with_original(language: str, audio_messages: List[AudioMessage], source_audio: str, output_audio: str = 'output.mp4a'):
     """
-    Смешивает переведенные фразы с оригинальной дорожкой
+    Смешивает переведенные фразы с оригинальной аудио дорожкой\n
 
-    sub словарь, где ключ это название сохраненного файла в temp, а значение это
-    словарь с текстом, момент произношения фразы и продолжительность озвучинваия  
+    lagnuage: str ---> язык у переведенных фраз\n
+    audio_messages: List[AudioMessage] ---> список переведенных фраз\n
+    source_audio: str ---> путь к исходной аудиодорожки\n
+    output_audio: str ---> путь к выходной аудиодорожки
     """
-    main_song = AudioSegment.from_file(song_path)
+    source_audio = AudioSegment.from_file(source_audio)
 
-    for k, v in sub.items():
-        start = v['start'] * 1000
-        voice = AudioSegment.from_file(v['path'])
-        if len(voice) > (v['end'] - v['start']) * 1000 + 100:
-            with open('debug.txt', 'a') as f:
-                f.write(f"{k} Len voice:{len(voice)}, Need len: {(v['end'] - v['start']) * 1000}\n")
+    for message in audio_messages:
+        audio_message = AudioSegment.from_file(message.path_to_message)
+        if len(audio_message) > message.expected_length:
             if language == 'русский':
-                voice = _speedup(v['path'], v['text'])
+                audio_message = _speedup(message.path_to_message, message.subtitle_block.text)
             else:
                 pass
-        main_song = main_song.overlay(voice, position=start, gain_during_overlay=-10)
-    t = main_song.export(out_f=output, format='mp3')
+        source_audio = source_audio.overlay(audio_message,
+                                            position=message.subtitle_block.start,
+                                            gain_during_overlay=-10
+                                            )
+        source_audio.export(out_f=output_audio, format='mp3')

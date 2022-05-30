@@ -1,10 +1,21 @@
-from Translator import audio, subs, voice_v2
-from deep_translator import GoogleTranslator
 from time import time
-from pytube import YouTube
+from typing import List, Tuple, Any
 import subprocess
 import os
 
+from deep_translator import GoogleTranslator
+from pytube import YouTube, Stream
+
+from Translator import audio, subs, voice_v2
+from Translator.custom_typing import PathToFile, SubtitleBlock
+
+
+RU_A_RU_RU_RU_ = {
+    'en': 'en_US',
+    'a.en': 'en_US',
+    'ru': 'ru_RU',
+    'a.ru': 'ru_RU',
+}
 
 DOWNLOAD_PATH = 'download'
 OUTPUT_PATH = 'output'
@@ -12,47 +23,38 @@ SUBS_PATH = 'subtitles'
 VIDEO_PATH = 'video'
 AUDIO_PATH = 'audio'
 
-
-if not os.path.isdir(DOWNLOAD_PATH):    # Create download path
+if not os.path.isdir(DOWNLOAD_PATH):  # Create download path
     os.makedirs(DOWNLOAD_PATH)
-if not os.path.isdir(OUTPUT_PATH):      # Create output path
+if not os.path.isdir(OUTPUT_PATH):  # Create output path
     os.makedirs(OUTPUT_PATH)
-if not os.path.isdir(SUBS_PATH):        # Create subtitles path
+if not os.path.isdir(SUBS_PATH):  # Create subtitles path
     os.makedirs(SUBS_PATH)
-if not os.path.isdir(VIDEO_PATH):       # Create videos path
+if not os.path.isdir(VIDEO_PATH):  # Create videos path
     os.makedirs(VIDEO_PATH)
-if not os.path.isdir(AUDIO_PATH):       # Create audios path
+if not os.path.isdir(AUDIO_PATH):  # Create audios path
     os.makedirs(AUDIO_PATH)
 
+CONVERT_CODE = RU_A_RU_RU_RU_
 
-CONVERT_CODE = {
-    'en'    : 'en_US',
-    'a.en'  : 'en_US',
-    'ru'    : 'ru_RU',
-    'a.ru'  : 'ru_RU',
-}
-
-
-SUPPORTED_LANGUAGES = [
+SUPPORTED_LANGUAGES = (
     'English',
     'Русский',
     # 'Башҡортса'
-]
+)
 
 PRIORITY_TRANSLATE = {
-    'english':      ['english', 'russian', ],
-    'русский':      ['russian', 'english', ],
+    'english': ['english', 'russian', ],
+    'русский': ['russian', 'english', ],
     # 'Башҡортса':    ['Bashkir', 'Russian', 'English'],
 }
 
-
 LANGUAGES_CODE = {
-    'en_US' : 'english',
-    'ru_RU' : 'русский',
+    'en_US': 'english',
+    'ru_RU': 'русский',
 }
 
 
-def get_support_subs(url: str) -> list:
+def get_support_subs(url: str) -> bool:
     s = subs.Subs(url)
     languages = s.get_support_languages()
     if languages:
@@ -60,9 +62,9 @@ def get_support_subs(url: str) -> list:
     return False
 
 
-def download_yt_content(url) -> tuple[str]:
+def download_yt_content(url) -> PathToFile:
     yt = YouTube(url)
-    videos: list[classmethod] = yt.streams.filter(progressive=False)
+    videos: List[Stream] = yt.streams.filter(progressive=False)
     max_resolution: int = 0
     for v in videos:
         if v.resolution:
@@ -71,51 +73,48 @@ def download_yt_content(url) -> tuple[str]:
             resolution = 0
         if resolution > max_resolution:
             max_resolution = resolution
-            video: classmethod = v
+            video: Stream = v
 
     filename = f"{int(time() // 1)}.mp4"
-    video: str = video.download(output_path=VIDEO_PATH, filename=filename)
-    if video[len(video) - 5:] == '.webm':
-        audio = video.split('/')[-1][:-5] + '.mp4'
-    else:
-        audio: str = video.split('/')[-1]
+    video_path: str = video.download(output_path=VIDEO_PATH, filename=filename)
+    audio_path: str = yt.streams.get_audio_only().download(output_path=AUDIO_PATH, filename=filename)
 
-    audio: str = yt.streams.get_audio_only().download(output_path=AUDIO_PATH, filename=filename)
+    video_path = f'{VIDEO_PATH}/' + video_path.split(f'/{VIDEO_PATH}/')[-1]
+    audio_path = f'{AUDIO_PATH}/' + audio_path.split(f'/{AUDIO_PATH}/')[-1]
 
-    video = f'{VIDEO_PATH}/' + video.split(f'/{VIDEO_PATH}/')[-1]
-    audio = f'{AUDIO_PATH}/' + audio.split(f'/{AUDIO_PATH}/')[-1]
-
-    return (video, audio)
+    return PathToFile(video_path, audio_path)
 
 
-def modify_voice(language: str, subs: dict, song: str):
+def modify_voice(language: str, subtitle: List[SubtitleBlock], song: str) -> str:
+    """return path to audio file in local disk"""
     t = int(time() // 1)
     file = os.path.abspath('')
     s = song[len(file):-4]
-    TEMP_FILEPATH = f'.{s}{t}'
+    filepath = f'.{s}{t}'
 
     if language == 'русский':
-        subs = voice_v2.say_in_russia(subs, TEMP_FILEPATH)
+        audio_messages = voice_v2.say_in_russian(subtitle, filepath)
     elif language == 'english':
-        subs = voice_v2.say_in_english(subs, TEMP_FILEPATH)
+        audio_messages = voice_v2.say_in_english(subtitle, filepath)
     else:
         raise BaseException(f"Not language: {language}")
-    new_song = song[:-4] + language + '.mp4'
-    audio.mix_translate_audio_with_original(language, subs, song, new_song)
-    voice_v2.clean(subs, TEMP_FILEPATH)
+    new_song = f'{song[:-4]}{language}.mp4'
+    audio.mix_translate_audio_with_original(language, audio_messages, song, new_song)
+    voice_v2.clean(audio_messages, filepath)
     return new_song
 
 
-def get_subs(url: str, need_langs: list):
+def get_subs(url: str, need_langs: list) -> tuple[str, None] | tuple[str | Any, list[SubtitleBlock]]:
     """
-    if not preffered subs, get any not autogen subtitles
-    else get any subs 
+    if not preferred subs, get any not autogen subtitles
+    else get any subs
+    return: access language and subtitle
     """
-    S = subs.Subs(url)
-    languages = S.get_support_languages()
+    subs_format = subs.Subs(url)
+    languages = subs_format.get_support_languages()
     access_language = ''
     if not languages:
-        return ('Not any subs', None)
+        return 'Not any subs', None
 
     for need_lang in need_langs:
         for lang in languages:
@@ -123,8 +122,9 @@ def get_subs(url: str, need_langs: list):
                 access_language = need_lang
                 code = lang.code
                 break
-            if access_language: break
-    
+            if access_language:
+                break
+
     if not access_language:
         for lang in languages:
             if not lang.code.startswith('a.'):
@@ -136,49 +136,50 @@ def get_subs(url: str, need_langs: list):
             access_language = lang.name.split(' ')[0].lower()
             code = lang.code
 
-    S.set_lang(code)
-    sub = S.get_subs_with_filter()
-    return (access_language, sub)
+    subs_format.set_lang(code)
+    subtitle = subs_format.format_subtitle()
+    return access_language, subtitle
 
 
-def save_subs(subtitle: dict) -> str:
+def save_subs(subtitle: List[SubtitleBlock]) -> str:
     t = int(time() // 1)
-    caption = subs.dict_to_srt(caption)
+    caption = subs.list_to_srt(subtitle)
     filepath = f'{SUBS_PATH}/{t}.srt'
     with open(filepath, 'w') as f:
         f.write(caption)
     return filepath
 
 
-def get_dict_subs_from_data(filepath: str):
+def get_dict_subs_from_data(filepath: str) -> List[SubtitleBlock]:
     with open(filepath, 'r') as f:
         srt = f.read()
-    
-    dict_subs = subs.srt_to_dict(srt)
-    return dict_subs
+
+    subtitle = subs.srt_to_list(srt)
+    return subtitle
 
 
-def merge_video_audio(video: str, audio: str):
+def merge_video_audio(path: PathToFile):
     t = int(time() // 1)
     save_video = f'{OUTPUT_PATH}/{t}.mp4'
     cmd = [
         'ffmpeg',
-        '-i', video,
-        '-i', audio,
+        '-i', path.video,
+        '-i', path.audio,
         '-vcodec:', 'copy',
         save_video
     ]
     worker = subprocess.check_call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
     return save_video
 
-def merge_video_subs(video: str, audio: str, subs: str):
+
+def merge_video_subs(path: PathToFile, subs_path: str):
     t = int(time() // 1)
     save_video = f'{OUTPUT_PATH}/{t}.mp4'
     cmd = [
         'ffmpeg',
-        '-i', video,
-        '-i', audio,
-        '-i', subs,
+        '-i', path.video,
+        '-i', path.audio,
+        '-i', subs_path,
         '-c', 'copy',
         '-c:s', 'mov_text',
         save_video
@@ -187,10 +188,10 @@ def merge_video_subs(video: str, audio: str, subs: str):
     return save_video
 
 
-def translate(sub: dict, source: str, target: str):
+def translate(subtitle: List[SubtitleBlock], source: str, target: str) -> List[SubtitleBlock]:
     key = {
         'русский': 'ru',
-        'english': 'en' 
+        'english': 'en'
     }
     languages = GoogleTranslator().get_supported_languages(as_dict=True)
     source = languages.get(source, 'auto')
@@ -198,7 +199,7 @@ def translate(sub: dict, source: str, target: str):
         source=source,
         target=key[target],
     )
-    for k, v in sub.items():
-        text = tr.translate(v['text'])
-        sub[k]['text'] = text
-    return sub
+    for i, block in enumerate(subtitle):
+        text = tr.translate(block.text)
+        subtitle[i].text = text
+    return subtitle
