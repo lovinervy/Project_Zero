@@ -18,6 +18,7 @@ output/
 # Custom Files
 latest_silero_models.yml
 debug.txt
+config.json
 
 
 # Distribution / packaging
