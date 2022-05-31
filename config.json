@@ -1,6 +1,1 @@
-{
-  "yandex" : {
-    "folder_id" : "",
-    "token" : ""
-  }
-}
+{"yandex": {"folder_id": "", "oauth": "", "token": ""}}

@@ -5,3 +5,4 @@ torch
 numpy
 pydub
 omegaconf
+requests

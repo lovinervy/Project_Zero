@@ -1,12 +1,12 @@
 from time import time
-from typing import List, Tuple, Any
+from typing import List, Any
 import subprocess
 import os
 
 from deep_translator import GoogleTranslator
 from pytube import YouTube, Stream
 
-from Translator import audio, subs, voice_v2
+from Translator import audio, subs, voice_v3
 from Translator.custom_typing import PathToFile, SubtitleBlock
 
 
@@ -75,9 +75,10 @@ def download_yt_content(url) -> PathToFile:
             max_resolution = resolution
             video: Stream = v
 
-    filename = f"{int(time() // 1)}.mp4"
-    video_path: str = video.download(output_path=VIDEO_PATH, filename=filename)
-    audio_path: str = yt.streams.get_audio_only().download(output_path=AUDIO_PATH, filename=filename)
+    video_name = f"{int(time() // 1)}.mp4"
+    audio_name = f"{int(time() // 1)}.aac"
+    video_path: str = video.download(output_path=VIDEO_PATH, filename=video_name)
+    audio_path: str = yt.streams.get_audio_only().download(output_path=AUDIO_PATH, filename=audio_name)
 
     video_path = f'{VIDEO_PATH}/' + video_path.split(f'/{VIDEO_PATH}/')[-1]
     audio_path = f'{AUDIO_PATH}/' + audio_path.split(f'/{AUDIO_PATH}/')[-1]
@@ -93,14 +94,14 @@ def modify_voice(language: str, subtitle: List[SubtitleBlock], song: str) -> str
     filepath = f'.{s}{t}'
 
     if language == 'русский':
-        audio_messages = voice_v2.say_in_russian(subtitle, filepath)
-    elif language == 'english':
-        audio_messages = voice_v2.say_in_english(subtitle, filepath)
+        audio_messages = voice_v3.say_in_russian(subtitle, filepath)
+    # elif language == 'english':
+    #     audio_messages = voice_v2.say_in_english(subtitle, filepath)
     else:
         raise BaseException(f"Not language: {language}")
-    new_song = f'{song[:-4]}{language}.mp4'
+    new_song = f'{song[:-4]}{language}.aac'
     audio.mix_translate_audio_with_original(language, audio_messages, song, new_song)
-    voice_v2.clean(audio_messages, filepath)
+    voice_v3.clean(audio_messages, filepath)
     return new_song
 
 
