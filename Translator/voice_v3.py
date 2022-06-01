@@ -12,7 +12,7 @@ from Translator.custom_typing import SubtitleBlock, AudioMessage
 def raw_to_wav(raw_path: str, wav_path: str):
     cmd = [
         'sox',
-        '-r', '48000',
+        '-r', '8000',
         '-b', '16',
         '-e', 'signed-integer',
         '-c', '1',
@@ -35,7 +35,7 @@ def synthesize(language: str, text: str, speed: float = 1.2, is_crashed: bool = 
         'lang': 'ru-RU',
         'speed': speed,
         'format': 'lpcm',
-        'sampleRateHertz': 48000,
+        'sampleRateHertz': 8000,
         'voice': 'alena',
         'folderId': config['yandex']['folder_id']
     }

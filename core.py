@@ -1,6 +1,9 @@
+from typing import Union
+
+from pytube import YouTube
+
 from database import DB
 from Translator import translator
-from pytube import YouTube
 
 
 def get_subs_from_youtube(url: str, language: str) -> str:
@@ -37,26 +40,26 @@ class ControlDatabase(DB):
             return youtube_id
         return self._add_youtube(url)
 
-    def have_translate(self, url: str, language: str) -> None | tuple:
+    def have_translate(self, url: str, language: str) -> Union[None, tuple]:
         translates = self.select_translates(self.check_url(url))
         for translate in translates:
             if language == translate[2]:
                 return translate
         return None
         
-    def have_translate_subs(self, url: str, language: str) -> None | tuple:
+    def have_translate_subs(self, url: str, language: str) -> Union[None, tuple]:
         translate = self.have_translate(url, language)
         if translate:
             return self.select_subtitles(translate[0])
         return None
 
-    def have_translate_voice(self, url: str, language: str) -> None | tuple:
+    def have_translate_voice(self, url: str, language: str) -> Union[None, tuple]:
         translate = self.have_translate(url, language)
         if translate:
             return self.select_voiceovers(translate[0])
         return None
 
-    def have_video(self, url: str) -> None | tuple:
+    def have_video(self, url: str) -> Union[None, tuple]:
         video = self.select_video(self.check_url(url))
         if video:
             return video

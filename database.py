@@ -1,5 +1,6 @@
 import os
 import sqlite3
+from typing import Union
 
 
 class DB:
@@ -64,7 +65,7 @@ class DB:
         self.connect.commit()
         return self.cursor.lastrowid
 
-    def get_youtube_id(self, url: str) -> int | None:
+    def get_youtube_id(self, url: str) -> Union[int, None]:
         sql = "SELECT id FROM youtube WHERE url = ?;"
         self.cursor.execute(sql, (url,))
         result = self.cursor.fetchone()
@@ -88,7 +89,7 @@ class DB:
         self.connect.commit()
         return self.cursor.lastrowid
 
-    def select_translates(self, youtube_id: int) -> list | None:
+    def select_translates(self, youtube_id: int) -> Union[list, None]:
         sql = ''' SELECT * FROM translates WHERE youtube_id = ?; '''
         self.cursor.execute(sql, (youtube_id,))
         result = self.cursor.fetchall()
@@ -110,7 +111,7 @@ class DB:
         self.connect.commit()
         return self.cursor.lastrowid
 
-    def select_subtitles(self, translates_id: int) -> tuple | None:
+    def select_subtitles(self, translates_id: int) -> Union[tuple, None]:
         sql = ''' SELECT * FROM subtitles WHERE translates_id = ?;'''
         self.cursor.execute(sql, (translates_id,))
         result = self.cursor.fetchone()
@@ -132,7 +133,7 @@ class DB:
         self.connect.commit()
         return self.cursor.lastrowid
 
-    def select_voiceovers(self, translates_id: int) -> tuple | None:
+    def select_voiceovers(self, translates_id: int) -> Union[tuple, None]:
         sql = ''' SELECT * FROM voiceovers WHERE translates_id = ?;'''
         self.cursor.execute(sql, (translates_id,))
         result = self.cursor.fetchone()
@@ -154,7 +155,7 @@ class DB:
         self.connect.commit()
         return self.cursor.lastrowid
 
-    def select_video(self, youtube_id: int) -> tuple | None:
+    def select_video(self, youtube_id: int) -> Union[tuple, None]:
         sql = ''' SELECT * FROM video WHERE youtube_id = ?; '''
         self.cursor.execute(sql, (youtube_id,))
         result = self.cursor.fetchone()

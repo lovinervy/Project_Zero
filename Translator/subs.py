@@ -2,7 +2,7 @@ import datetime
 import time
 import re
 from html import unescape
-from typing import List, Dict
+from typing import List
 import xml.etree.ElementTree as ElementTree
 
 from pytube import YouTube, Caption
