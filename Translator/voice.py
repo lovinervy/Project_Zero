@@ -1,6 +1,7 @@
 import pyttsx3
 import os
 
+
 class VoiceEngine:
     def __init__(self, lang: str = 'ru_RU', gender: str = 'female', temppath: str = 'temp') -> None:
         self.TEMP_DATA = temppath

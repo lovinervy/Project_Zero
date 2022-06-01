@@ -2,7 +2,7 @@ import datetime
 import time
 import re
 from html import unescape
-from typing import List
+from typing import List, Dict
 import xml.etree.ElementTree as ElementTree
 
 from pytube import YouTube, Caption
@@ -24,7 +24,7 @@ class Subs:
         caption: Caption = self.yt.captions[lang]
         return caption.xml_captions
 
-    def get_support_languages(self) -> dict[Caption]:
+    def get_support_languages(self) -> Dict[Caption]:
         lang: dict[Caption] = self.yt.captions
         return lang
 
@@ -153,7 +153,7 @@ def list_to_srt(subtitle: List[SubtitleBlock]):
     return '\n'.join(segments).strip()
 
 
-def srt_to_list(srt: str) -> list[SubtitleBlock]:
+def srt_to_list(srt: str) -> List[SubtitleBlock]:
     def time_ms(srt_time: str) -> int:
         srt_time = srt_time.replace(',', '.').split(':')
         time_delta = datetime.timedelta(
