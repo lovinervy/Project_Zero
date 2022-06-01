@@ -24,8 +24,8 @@ class Subs:
         caption: Caption = self.yt.captions[lang]
         return caption.xml_captions
 
-    def get_support_languages(self) -> Dict[Caption]:
-        lang: dict[Caption] = self.yt.captions
+    def get_support_languages(self) -> Dict[str, Caption]:
+        lang: Dict[str, Caption] = self.yt.captions
         return lang
 
     def set_lang(self, lang: str) -> None:
