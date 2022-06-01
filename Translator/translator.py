@@ -1,5 +1,5 @@
 from time import time
-from typing import List, Any, Union
+from typing import List, Tuple, Union
 import subprocess
 import os
 
@@ -105,7 +105,7 @@ def modify_voice(language: str, subtitle: List[SubtitleBlock], song: str) -> str
     return new_song
 
 
-def get_subs(url: str, need_langs: list) -> Union[tuple[str, None], tuple[str, List[SubtitleBlock]]]:
+def get_subs(url: str, need_langs: list) -> Union[Tuple[str, None], Tuple[str, List[SubtitleBlock]]]:
     """
     if not preferred subs, get any not autogen subtitles
     else get any subs
