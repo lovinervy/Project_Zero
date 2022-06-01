@@ -27,11 +27,11 @@ def mix_translate_audio_with_original(language: str, audio_messages: List[AudioM
     source_audio: str ---> путь к исходной аудиодорожки\n
     output_audio: str ---> путь к выходной аудиодорожки
     """
-    source_audio = AudioSegment.from_file(source_audio)
+    source_audio = AudioSegment.from_wav(source_audio)
     for message in audio_messages:
-        audio_message = AudioSegment.from_file(message.path_to_message)
+        audio_message = AudioSegment.from_wav(message.path_to_message)
         source_audio = source_audio.overlay(audio_message,
                                             position=message.subtitle_block.start,
                                             gain_during_overlay=-10
                                             )
-        source_audio.export(out_f=output_audio, format='mp3')
+        source_audio.export(out_f=output_audio, format='wav')
