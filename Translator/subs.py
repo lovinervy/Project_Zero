@@ -119,7 +119,8 @@ class Subs:
         for i in range(len(subtitle)):
             end = subtitle[i].end
             if subtitle[i].start - end < 120 and \
-                    segments[counter].text[-1] not in ('.', '-', '!', '?'):
+                    segments[counter].text[-1] not in ('.', '-', '!', '?') and \
+                    segments[counter].text[0].upper() != segments[counter].text[0]:
                 segments[counter].text += ' ' + subtitle[i].text
                 segments[counter].end = subtitle[i].end
             else:
