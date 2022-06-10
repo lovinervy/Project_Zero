@@ -29,7 +29,7 @@ def synthesize(language: str, text: str, speed: float = 1.2, is_crashed: bool = 
     headers = {
         'Authorization': 'Bearer ' + config['yandex']['token'],
     }
-    v = 'john' if language == 'en_US' else 'alena'
+    v = 'john' if language == 'en-US' else 'alena'
     data = {
         'text': text,
         'lang': language,
@@ -63,7 +63,7 @@ def say_in_russian(subtitle: List[SubtitleBlock], output: str = 'output') -> Lis
         wav_path = f'{output}/{i}.wav'
         expected_length = block.end - block.start
         with open(raw_path, 'wb') as f:
-            for audio_content in synthesize('ru_RU', block.text):
+            for audio_content in synthesize('ru-RU', block.text):
                 f.write(audio_content)
         # audio_message = AudioSegment.from_file(wav_path)
         # if len(audio_message) > expected_length:
@@ -95,7 +95,7 @@ def say_in_english(subtitle, output):
         wav_path = f'{output}/{i}.wav'
         expected_length = block.end - block.start
         with open(raw_path, 'wb') as f:
-            for audio_content in synthesize('en_US', block.text):
+            for audio_content in synthesize('en-US', block.text):
                 f.write(audio_content)
         raw_to_wav(raw_path, wav_path)
         audio_messages.append(
