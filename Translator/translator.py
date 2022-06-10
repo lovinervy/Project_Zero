@@ -101,8 +101,8 @@ def modify_voice(language: str, subtitle: List[SubtitleBlock], song: str) -> str
 
     if language == 'русский':
         audio_messages = voice_v3.say_in_russian(subtitle, filepath)
-    # elif language == 'english':
-    #     audio_messages = voice_v2.say_in_english(subtitle, filepath)
+    elif language == 'english':
+        audio_messages = voice_v3.say_in_english(subtitle, filepath)
     else:
         raise BaseException(f"Not language: {language}")
     new_song = f'{song[:-4]}{language}.aac'

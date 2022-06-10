@@ -29,14 +29,14 @@ def synthesize(language: str, text: str, speed: float = 1.2, is_crashed: bool = 
     headers = {
         'Authorization': 'Bearer ' + config['yandex']['token'],
     }
-
+    v = 'john' if language == 'en_US' else 'alena'
     data = {
         'text': text,
-        'lang': 'ru-RU',
+        'lang': language,
         'speed': speed,
         'format': 'lpcm',
         'sampleRateHertz': 16000,
-        'voice': 'alena',
+        'voice': v,
         'folderId': config['yandex']['folder_id']
     }
     try:
@@ -86,7 +86,26 @@ def say_in_russian(subtitle: List[SubtitleBlock], output: str = 'output') -> Lis
 
 
 def say_in_english(subtitle, output):
-    pass
+    if not os.path.isdir(output):
+        os.makedirs(output)
+
+    audio_messages: List[AudioMessage] = []
+    for i, block in enumerate(subtitle):
+        raw_path = f'{output}/{i}.raw'
+        wav_path = f'{output}/{i}.wav'
+        expected_length = block.end - block.start
+        with open(raw_path, 'wb') as f:
+            for audio_content in synthesize('en_US', block.text):
+                f.write(audio_content)
+        raw_to_wav(raw_path, wav_path)
+        audio_messages.append(
+            AudioMessage(
+                path_to_message=wav_path,
+                expected_length=expected_length,
+                subtitle_block=block
+            )
+        )
+    return audio_messages
 
 
 def clean(audio_messages: List[AudioMessage], output: str = 'output'):
