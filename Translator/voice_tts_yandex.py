@@ -53,59 +53,33 @@ def synthesize(language: str, text: str, speed: float = 1.2, is_crashed: bool = 
         synthesize(language, text, True)
 
 
+def synthesize_audio_files(language: str, subtitle: List[SubtitleBlock], output: str = 'output') -> List[AudioMessage]:
+    if not os.path.isdir(output):
+        os.makedirs(output)
+
+    audio_messages: List[AudioMessage] = []
+    for i, block in enumerate(subtitle):
+        raw_path = f'{output}/{i}.raw'
+        wav_path = f'{output}/{i}.wav'
+        with open(raw_path, 'wb') as f:
+            for audio_content in synthesize(language, block.text):
+                f.write(audio_content)
+        raw_to_wav(raw_path, wav_path)
+        audio_messages.append(
+            AudioMessage(
+                path_to_message=wav_path,
+                subtitle_block=block
+            )
+        )
+        return audio_messages
+
+
 def say_in_russian(subtitle: List[SubtitleBlock], output: str = 'output') -> List[AudioMessage]:
-    if not os.path.isdir(output):
-        os.makedirs(output)
-
-    audio_messages: List[AudioMessage] = []
-    for i, block in enumerate(subtitle):
-        raw_path = f'{output}/{i}.raw'
-        wav_path = f'{output}/{i}.wav'
-        expected_length = block.end - block.start
-        with open(raw_path, 'wb') as f:
-            for audio_content in synthesize('ru-RU', block.text):
-                f.write(audio_content)
-        # audio_message = AudioSegment.from_file(wav_path)
-        # if len(audio_message) > expected_length:
-        #     speed_up = round(len(audio_message) / expected_length, 1)
-        #     if speed_up > 1.5:
-        #         speed_up = 1.5
-        #     with open(wav_path, 'wb') as f:
-        #         for audio_content in synthesize('ru_RU', block.text, speed_up):
-        #             f.write(audio_content)
-
-        raw_to_wav(raw_path, wav_path)
-        audio_messages.append(
-            AudioMessage(
-                path_to_message=wav_path,
-                expected_length=expected_length,
-                subtitle_block=block
-            )
-        )
-    return audio_messages
+    return synthesize_audio_files('ru-RU', subtitle, output)
 
 
-def say_in_english(subtitle, output):
-    if not os.path.isdir(output):
-        os.makedirs(output)
-
-    audio_messages: List[AudioMessage] = []
-    for i, block in enumerate(subtitle):
-        raw_path = f'{output}/{i}.raw'
-        wav_path = f'{output}/{i}.wav'
-        expected_length = block.end - block.start
-        with open(raw_path, 'wb') as f:
-            for audio_content in synthesize('en-US', block.text):
-                f.write(audio_content)
-        raw_to_wav(raw_path, wav_path)
-        audio_messages.append(
-            AudioMessage(
-                path_to_message=wav_path,
-                expected_length=expected_length,
-                subtitle_block=block
-            )
-        )
-    return audio_messages
+def say_in_english(subtitle, output) -> List[AudioMessage]:
+    return synthesize_audio_files('en-US', subtitle, output)
 
 
 def clean(audio_messages: List[AudioMessage], output: str = 'output'):

@@ -6,7 +6,8 @@ import os
 from deep_translator import GoogleTranslator
 from pytube import YouTube, Stream
 
-from Translator import audio, subs, voice_v3
+from Translator import audio, subs
+from Translator import voice_tts_yandex as voice
 from Translator.custom_typing import PathToFile, SubtitleBlock
 
 
@@ -100,14 +101,14 @@ def modify_voice(language: str, subtitle: List[SubtitleBlock], song: str) -> str
     filepath = f'.{s}{t}'
 
     if language == 'русский':
-        audio_messages = voice_v3.say_in_russian(subtitle, filepath)
+        audio_messages = voice.say_in_russian(subtitle, filepath)
     elif language == 'english':
-        audio_messages = voice_v3.say_in_english(subtitle, filepath)
+        audio_messages = voice.say_in_english(subtitle, filepath)
     else:
         raise BaseException(f"Not language: {language}")
     new_song = f'{song[:-4]}{language}.aac'
-    audio.mix_translate_audio_with_original(language, audio_messages, song, new_song)
-    voice_v3.clean(audio_messages, filepath)
+    audio.mix_translate_audio_with_original(audio_messages, song, new_song)
+    voice.clean(audio_messages, filepath)
     return new_song
 
 

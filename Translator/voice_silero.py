@@ -52,7 +52,7 @@ def say_in_russian(subtitle: List[SubtitleBlock], output: str = 'output') -> Lis
     for i, block in enumerate(subtitle):
         path = f'{output}/{i}.wav'
         text = clear_ascii_letters(block.text)
-        expected_length = block.end - block.start
+        text = f'<speak><p><prosody rate="110%">{text}</prosody></p></speak>'
         try:
             model.save_wav(text=text,
                            speaker='baya',
@@ -65,29 +65,10 @@ def say_in_russian(subtitle: List[SubtitleBlock], output: str = 'output') -> Lis
         audio_messages.append(
             AudioMessage(
                 path_to_message=path,
-                expected_length=expected_length,
                 subtitle_block=block
             )
         )
     return audio_messages
-
-
-def retell_quickly_in_russian(filepath: str, text: str) -> None:
-    text = f'<speak><p><prosody rate="fast">{text}</prosody></p></speak>'
-
-    device = torch.device('cpu')
-
-    model, _ = torch.hub.load(repo_or_dir='snakers4/silero-models',
-                              model='silero_tts',
-                              language='ru',
-                              speaker='ru_v3')
-    model.to(device)  # gpu or cpu
-
-    model.save_wav(ssml_text=text,
-                   speaker='baya',
-                   sample_rate=24000,
-                   audio_path=filepath
-                   )
 
 
 def say_in_english(subtitle: List[SubtitleBlock], output: str = 'output') -> List[AudioMessage]:
@@ -141,7 +122,6 @@ def say_in_english(subtitle: List[SubtitleBlock], output: str = 'output') -> Lis
             os.rename('test_000.wav', path)
         audio_messages.append(
             AudioMessage(path_to_message=path,
-                         expected_length=block.end - block.start,
                          subtitle_block=block
                          )
         )

@@ -27,9 +27,7 @@ class PathToFile:
 class AudioMessage(NamedTuple):
     """
     path_to_message: str ---> path to audio file in local disk\n
-    expected_length: int ---> the duration show of the subtitle block in milliseconds\n
     subtitle_block: SubtitleBlock ---> class SubtitleBlock
     """
     path_to_message: str
-    expected_length: int
     subtitle_block: SubtitleBlock

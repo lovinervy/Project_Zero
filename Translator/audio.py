@@ -1,28 +1,13 @@
 from typing import List
 
-from pydub import AudioSegment, effects
+from pydub import AudioSegment
 
-# from Translator.voice_v2 import retell_quickly_in_russian
 from Translator.custom_typing import AudioMessage
 
 
-# def _speedup(path: str, text: str) -> AudioSegment:
-#     """
-#     Для ускорение аудиодорожки если не успевает в заданный лимит\n
-#
-#     path: str   - путь до исходной аудиодорожки\n
-#     text: str   - слова которые произносятся в этой дорожке
-#     """
-#     retell_quickly_in_russian(path, text)
-#     voice = AudioSegment.from_file(path)
-#     return voice
-
-
-def mix_translate_audio_with_original(language: str, audio_messages: List[AudioMessage], source_audio: str, output_audio: str = 'output.mp4a'):
+def mix_translate_audio_with_original(audio_messages: List[AudioMessage], source_audio: str, output_audio: str):
     """
     Смешивает переведенные фразы с оригинальной аудио дорожкой\n
-
-    lagnuage: str ---> язык у переведенных фраз\n
     audio_messages: List[AudioMessage] ---> список переведенных фраз\n
     source_audio: str ---> путь к исходной аудиодорожки\n
     output_audio: str ---> путь к выходной аудиодорожки
