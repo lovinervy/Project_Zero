@@ -4,6 +4,8 @@ import pyttsx3
 
 from custom_typing import SubtitleBlock, AudioMessage
 
+# Not working in linux and FreeBSD
+
 
 class VoiceEngine:
     def __init__(self, lang: str = 'ru_RU', gender: str = 'female', temppath: str = 'temp') -> None:

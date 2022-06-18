@@ -3,10 +3,12 @@ import subprocess
 from typing import List
 import json
 import requests
-# from pydub import AudioSegment
 
 from Translator.yandex import update_token
 from Translator.custom_typing import SubtitleBlock, AudioMessage
+
+
+# Need yandex tokens. Specify yandex.folder_id and yandex.oauth in config.json
 
 
 def raw_to_wav(raw_path: str, wav_path: str):
@@ -71,7 +73,7 @@ def synthesize_audio_files(language: str, subtitle: List[SubtitleBlock], output:
                 subtitle_block=block
             )
         )
-        return audio_messages
+    return audio_messages
 
 
 def say_in_russian(subtitle: List[SubtitleBlock], output: str = 'output') -> List[AudioMessage]:

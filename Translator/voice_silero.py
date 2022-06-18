@@ -7,6 +7,8 @@ import torch
 
 from Translator.custom_typing import SubtitleBlock, AudioMessage
 
+# Need AVX1 or higher. Works for a long time
+
 
 def clear_ascii_letters(word):
     def return_chr(char):
