@@ -1,5 +1,10 @@
 # Project_Zero
 
+## Пример работы
+[Оригинальное видео](https://www.youtube.com/watch?v=t_p4ZyAYyaY)
+
+[Прогнанный через наш сервис](https://zen.yandex.ru/embed/vps3aVbErE3Y)
+## Перед установкой
 Скачать программу через [git](https://git-scm.com/):
 
 ```git clone https://github.com/lovinervy/Project_Zero.git -b update```
