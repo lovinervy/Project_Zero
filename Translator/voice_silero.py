@@ -114,7 +114,8 @@ def say_in_english(subtitle: List[SubtitleBlock], output: str = 'output') -> Lis
                 '-acodec', 'copy',
                 path
             ]
-            subprocess.check_call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+            subprocess.check_call(
+                cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
             for filepath in filepaths:
                 os.remove(filepath)
         else:

@@ -13,7 +13,8 @@ def update_token() -> None:
     }
     resp = requests.post(url, json=body)
     if resp.status_code != 200:
-        raise RuntimeError(f'Invalid response received: code: {resp.status_code}, message: {resp.text}')
+        raise RuntimeError(
+            f'Invalid response received: code: {resp.status_code}, message: {resp.text}')
 
     content = json.loads(resp.content)
     data['yandex']['token'] = content['iamToken']

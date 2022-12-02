@@ -78,17 +78,21 @@ def download_yt_content(url) -> PathToFile:
 
     video_name = f"{int(time() // 1)}.mp4"
     audio_name = f"{int(time() // 1)}.aac"
-    video_path: str = video.download(output_path=VIDEO_PATH, filename=video_name)
-    audio_path: str = yt.streams.get_audio_only().download(output_path=AUDIO_PATH, filename=audio_name)
+    video_path: str = video.download(
+        output_path=VIDEO_PATH, filename=video_name)
+    audio_path: str = yt.streams.get_audio_only().download(
+        output_path=AUDIO_PATH, filename=audio_name)
     cmd = [
         'ffmpeg',
         '-i', audio_path,
         audio_path[:-3] + 'wav'
     ]
-    subprocess.check_call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    subprocess.check_call(cmd, stdout=subprocess.DEVNULL,
+                          stderr=subprocess.STDOUT)
     os.remove(audio_path)
     video_path = f'{VIDEO_PATH}/' + video_path.split(f'/{VIDEO_PATH}/')[-1]
-    audio_path = f'{AUDIO_PATH}/' + audio_path.split(f'/{AUDIO_PATH}/')[-1][:-3] + 'wav'
+    audio_path = f'{AUDIO_PATH}/' + \
+        audio_path.split(f'/{AUDIO_PATH}/')[-1][:-3] + 'wav'
 
     return PathToFile(video_path, audio_path)
 
@@ -176,7 +180,8 @@ def merge_video_audio(path: PathToFile):
         '-vcodec:', 'copy',
         save_video
     ]
-    worker = subprocess.check_call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    worker = subprocess.check_call(
+        cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
     return save_video
 
 
@@ -192,7 +197,8 @@ def merge_video_subs(path: PathToFile, subs_path: str):
         '-c:s', 'mov_text',
         save_video
     ]
-    worker = subprocess.check_call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    worker = subprocess.check_call(
+        cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
     return save_video
 
 

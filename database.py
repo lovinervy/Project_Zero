@@ -3,13 +3,14 @@ import sqlite3
 from typing import Union
 
 
-class DB:
+class Database:
     DATABASE_PATH = 'DATABASE'
 
     def __init__(self) -> None:
         if not os.path.isdir(self.DATABASE_PATH):
             os.makedirs(self.DATABASE_PATH)
-        self.connect = sqlite3.connect(f'{self.DATABASE_PATH}/DATABASE.db', check_same_thread=False)
+        self.connect = sqlite3.connect(
+            f'{self.DATABASE_PATH}/DATABASE.db', check_same_thread=False)
         self.cursor = self.connect.cursor()
         self.create_database()
         self.cursor.execute('PRAGMA foreign_keys = ON')

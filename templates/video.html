@@ -2,8 +2,10 @@
 
 {% block content %}
 <form method="post">
-    <p><div id="player"></div></p>
-    <script> var player = new Playerjs({id:"player", file:"{{ video }}"});</script>
+    <p>
+    <div id="player"></div>
+    </p>
+    <script> var player = new Playerjs({ id: "player", file: "{{ video }}" });</script>
     <div><button type="submit" class="btn btn-btn-primary">Назад</button></div>
 </form>
 {% endblock %}

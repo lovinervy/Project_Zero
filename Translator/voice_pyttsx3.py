@@ -14,7 +14,8 @@ class VoiceEngine:
         if not os.path.isdir(self.TEMP_DATA):
             os.makedirs(self.TEMP_DATA)
         else:
-            self.temp_files = map(self.__add_tmp_path, os.listdir(self.TEMP_DATA))
+            self.temp_files = map(self.__add_tmp_path,
+                                  os.listdir(self.TEMP_DATA))
             self.clean()
 
         if gender.lower() == 'male':
@@ -22,21 +23,23 @@ class VoiceEngine:
         elif gender.lower() == 'female':
             voice_gender = 'VoiceGenderFemale'
         else:
-            raise BaseException(f'Expected gender "male" or "female" but got "{gender}"')
+            raise BaseException(
+                f'Expected gender "male" or "female" but got "{gender}"')
 
         self.tts_engine = pyttsx3.init()
         voices = self.tts_engine.getProperty('voices')
         self.support_voices = voices
-        
+
         is_supported = False
         for num in range(len(voices)):
             if voices[num].gender == voice_gender and voices[num].languages == [lang]:
                 self.tts_engine.setProperty('voice', voices[num].id)
                 is_supported = True
                 break
-        
+
         if not is_supported:
-            raise BaseException(f'Engine not supported with language: "{lang}" and gender: "{gender}"')
+            raise BaseException(
+                f'Engine not supported with language: "{lang}" and gender: "{gender}"')
 
     def say(self, text: str, output: str = 'output') -> str:
         song = f'{self.TEMP_DATA}/{output}.wav'

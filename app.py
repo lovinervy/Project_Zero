@@ -3,16 +3,14 @@ from flask import Flask, make_response, render_template, request, redirect, send
 
 from Translator import translator
 import core
-from Translator.custom_typing import PathToFile
 
 app = Flask(__name__)
-control = core.ControlDatabase()
 
 
 app.config['OUTPUT_FOLDER'] = translator.OUTPUT_PATH
 
 
-# Get files from output folder
+# Для того чтобы открыть доступ к директории outputs
 @app.route(f'/{app.config["OUTPUT_FOLDER"]}/<path:filename>', methods=['GET', 'POST'])
 def download(filename):
     directory = path.join(app.root_path, app.config['OUTPUT_FOLDER'])
@@ -25,7 +23,7 @@ def index():
         url = request.form.get('url')
         if not url:
             return make_response(render_template('index.html', error='Ошибка укажите url'))
-        elif not control.valid_url(url):
+        elif not core.valid_url(url):
             return make_response(render_template('index.html', error='Ошибка неверный url'))
         return redirect(url_for('configure', url=url))
     return render_template('index.html')
@@ -40,7 +38,8 @@ def configure():
     url = request.args.get('url')
     languages = ['Default']
     languages += translator.SUPPORTED_LANGUAGES
-    response = make_response(render_template('video_settings.html', languages=languages))
+    response = make_response(render_template(
+        'video_settings.html', languages=languages))
     response.set_cookie('url', url)
     return response
 
@@ -51,43 +50,8 @@ def video():
     translate_to = request.args.get('tr_to')
     language = request.args.get('lang').lower()
 
-    # Get info about video and audio
-    video_data = control.have_video(url)
-    audio_data = control.have_translate_voice(url, 'default')
-
-    if video_data and audio_data:
-        video_path = video_data[2]
-        audio_path = audio_data[2]
-        content_path = PathToFile(video=video_path, audio=audio_path)
-    else:
-        content_path = translator.download_yt_content(url)
-        control.add_video(url, content_path.video)
-        control.add_voiceover(url, 'default', content_path.audio)
-
-    if translate_to == 'Voice' and language != 'default':
-        has_audio = control.have_translate_voice(url, language)
-        if not has_audio:
-            has_subs = control.have_translate_subs(url, language)
-            if not has_subs:
-                subs_path = core.get_subs_from_youtube(url, language)
-                control.add_subtitles(url, language, subs_path)
-            else:
-                subs_path = has_subs[2]
-            subtitle = translator.get_dict_subs_from_data(subs_path)
-            voiceover = translator.modify_voice(language, subtitle, content_path.audio)
-            control.add_voiceover(url, language, voiceover)
-            has_audio = control.have_translate_voice(url, language)
-        content_path.audio = has_audio[2]
-        result_video = translator.merge_video_audio(content_path)
-    elif translate_to == 'Subs' and language != 'default':
-        has_subs = control.have_translate_subs(url, language)
-        if not has_subs:
-            subs_path = core.get_subs_from_youtube(url, language)
-            control.add_subtitles(url, language, subs_path)
-        else:
-            subs_path = has_subs[2]
-        result_video = translator.merge_video_subs(content_path, subs_path)
-    else:
-        result_video = translator.merge_video_audio(content_path)
-
-    return render_template('video.html', video=result_video)
+    # Инициализируем класс помощник с требуемыми параметрами к видео
+    helper = core.TranslateHelper(translate_to, url, language)
+    # Формируем видео с требуемыми параметрами и возвращает путь на локальном диске
+    video = helper.execute()
+    return render_template('video.html', video=video)
